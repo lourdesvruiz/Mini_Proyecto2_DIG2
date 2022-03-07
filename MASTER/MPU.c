@@ -17,7 +17,7 @@ int conversion_x();
 int conversion_y();
 unsigned char MPU_conversion(uint8_t  conv);
 
-//Funci髇 de inicializaci髇 de comunicacion I2C con sensor
+//Funci贸n de inicializaci贸n de comunicacion I2C con sensor
 void MPU6050_Init()
 {
   // Power-Up Delay & I2C_Init
@@ -71,7 +71,7 @@ void MPU6050_Read()
   I2C_Master_Stop();
   I2C_Start(0xD1);
  
-  //Medici髇 de rotaci髇 angular 
+  //Medici贸n de rotaci贸n angular 
   
   Gx = ((int)I2C_Read(0)<<8) | (int)I2C_Read(0);
   Gy = ((int)I2C_Read(0)<<8) | (int)I2C_Read(0);
@@ -79,7 +79,7 @@ void MPU6050_Read()
   I2C_Master_Stop();
   
   // Conversion a grados por segundo 
-  GX = ((Gx/131)*100);  //se multiplica por 100 para obtener un valor m醩 elevado
+  GX = ((Gx/131)*100);  //se multiplica por 100 para obtener un valor m谩s elevado
   GY = ((Gy/131)*100);
   
   // Banderas para valores negativos 
@@ -108,12 +108,15 @@ void MPU6050_Read()
   Lcd_Write_String(conversion_x());
   strings("Gx:");
   strings(conversion_x());
+  strings(" ");
   
   Lcd_Set_Cursor(2,1);
   Lcd_Write_String("Gy:");
   Lcd_Write_String(conversion_y());
   strings("Gy:");
   strings(conversion_y());
+  strings(" ");
+  strings("\n");
  
 }
 
@@ -154,7 +157,7 @@ unsigned char MPU_conversion(uint8_t  conv){
 }
 
 int conversion_x(){
-    uint8_t buffer[40];
+    uint8_t buffer[6];
     if (flag_x == 1){
       //buffer[0] = 32;  //espacio
       buffer[1] = 45;  //signo negativo
@@ -179,7 +182,7 @@ int conversion_x(){
 }
 
 int conversion_y(){
-    uint8_t buffer[40];
+    uint8_t buffer[6];
     if (flag_y == 1){
       //buffer[0] = 32;
       buffer[1] = 45;
