@@ -20,30 +20,32 @@
 /************************ Example Starts Here *******************************/
 
 // this int will hold the current count for our sketch
+#define IO_LOOP_DELAY 5000
+
 #define led 2
-#define RX2 16
+#define RX2 16  //Pines GPIO
 #define TX2 17
+unsigned long lastUpdate = 0;
 int G = 0;
 int Y = 0;
 int R = 0;
 char bandera;
 
 char *semaforo;
+int sensor;
+//String sensor_gyro;
+char gyro_s[18];
 
 
-
-// set up the 'counter' feed
+// set up the feed
 AdafruitIO_Feed *sem = io.feed("semaforo");
-AdafruitIO_Feed *green = io.feed("verde");
-AdafruitIO_Feed *yellow = io.feed("amarillo");
-AdafruitIO_Feed *red = io.feed("rojo");
+AdafruitIO_Feed *gyro = io.feed("sensor");
 
 void setup() {
 
-
-  // start the serial connection
-  //Serial.begin(115200);
+  //Comunicacion Arduino y ESP32
   Serial.begin(9600);
+  //Comunicacion USART ESP32 y PIC 
   Serial2.begin(9600, SERIAL_8N1, RX2, TX2);
  
   delay(1000);
@@ -73,10 +75,9 @@ void setup() {
 
   
   // we are connected
+  // Recibir datos de los feeds
   sem->get();
-  green->get();
-  yellow->get();
-  red->get();
+  ;
 
   Serial.println();
   Serial.println(io.statusText());
@@ -89,22 +90,34 @@ void loop() {
   // function. it keeps the client connected to
   // io.adafruit.com, and processes any incoming data.
   io.run();
-  /*
-  // save count to the 'counter' feed on Adafruit IO
-  Serial.print("sending -> ");
-  Serial.println(count);
-  counter->save(count);
 
-  // increment the count by 1
-  count++;
-  */
+  //Chequea si se está recibiendo datos del PIC
+  if (Serial2.available()){
+    
+    //Se recibe una cadena de texto y lo almacena en el buffer 
+    //También se define un buffer (en este caso, de 18 espacios) 
+    //Para al llegar al carácter nulo 
+    char sensor_gyro = Serial2.readBytesUntil('\n', gyro_s, 18);
+
+    Serial.print(gyro_s);
+    Serial.println(" ");
+  }
+  
+  //Se usa millis como un medidor de tiempo 
+  //Espera que pase un tiempo (delay) desde el primer impulso, para luego proceder a seguir ejecutando (la recepción de datos del PIC) 
+  if (millis() > (lastUpdate + IO_LOOP_DELAY)) {
+    gyro->save(gyro_s);     //se guarda el valor del sensor en el feed de sensor
+
+    lastUpdate = millis();
+  }
   // Adafruit IO is rate limited for publishing, so a delay is required in
   // between feed->save events. In this example, we will wait three seconds
   // (1000 milliseconds == 1 second) during each loop.
-  //delay(3000);
+  delay(500);
 
 }
 
+//Funcion para mandarle el valor adecuado del semáforo a el PIC maestro 
 void handleMessage(AdafruitIO_Data *data) {
 
   //Serial.print("received <- ");
